@@ -130,6 +130,11 @@ try {
     await page.screenshot({ path: `${SHOTS}/01-home-full.png`, fullPage: true });
     // nav
     ok((await page.locator(".brand").getAttribute("href")) === "/", "app name links home");
+    ok((await page.locator(".nav-links > .nav-btn, .nav-links > .sys").count()) === 2, "top bar shows only 'new case' and the system menu");
+    ok(!(await page.locator(".sys-menu").evaluate((el) => el.classList.contains("is-open"))), "system menu closed by default");
+    await page.locator(".sys-toggle").click();
+    ok(await page.locator(".sys-toggle img[alt=מערכת]").isVisible(), "uploaded logo is the system menu trigger");
+    await page.screenshot({ path: `${SHOTS}/01b-system-menu.png` });
     ok((await page.locator("a.nav-btn", { hasText: "שיחת הפיתוח" }).getAttribute("href")).includes("claude.ai/code/session_"), "dev chat link");
     ok((await page.locator("a.nav-btn", { hasText: "פרויקט המחקר" }).getAttribute("href")).includes("claude.ai/project/"), "research project link");
     await page.locator("button.nav-btn", { hasText: "העתקת קישור" }).click();
@@ -268,6 +273,7 @@ try {
 
     // copy link with lens state
     await page.locator("[data-testid=rail-buddhist]").click();
+    await page.locator(".sys-toggle").click();
     await page.locator("button.nav-btn", { hasText: "העתקת קישור" }).click();
     ok((await page.evaluate(() => navigator.clipboard.readText())).endsWith("?lens=buddhist"), "copy link keeps the lens in the url");
 
@@ -353,10 +359,14 @@ try {
     await page.goto(`${BASE}/case/${ids.ready}`);
     await wait(800);
     await page.screenshot({ path: `${SHOTS}/09-mobile-case.png` });
-    await page.locator(".nav-toggle").click();
+    await page.locator(".sys-toggle").click();
     await wait(300);
-    ok(await page.locator("button.nav-btn", { hasText: "העתקת קישור" }).isVisible(), "mobile menu opens");
+    ok(await page.locator("button.nav-btn", { hasText: "העתקת קישור" }).isVisible(), "mobile system menu opens");
+    await noHScroll(page, "mobile system menu");
     await page.screenshot({ path: `${SHOTS}/10-mobile-menu.png` });
+    await page.keyboard.press("Escape");
+    await wait(300);
+    ok(!(await page.locator("button.nav-btn", { hasText: "העתקת קישור" }).isVisible()), "escape closes the system menu");
     await page.locator(".nav-btn--accent").click();
     await page.waitForURL(/\/new$/);
     ok(true, "mobile menu link works");

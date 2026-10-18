@@ -6,3 +6,6 @@ export const SUPABASE_ANON =
 
 export const DEV_CHAT_URL = "https://claude.ai/code/session_012bSCVEpFKYNJePJ9V37QJp";
 export const RESEARCH_PROJECT_URL = "https://claude.ai/project/01a14f3c-715c-75d4-ab61-0356bc39b53c";
+
+// System menu trigger: Anat's logo when one was uploaded, otherwise the word "מערכת".
+export const LOGO_URL = "/logo.png";
