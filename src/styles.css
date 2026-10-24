@@ -132,60 +132,11 @@ p { margin: 0; }
 .nav-btn:hover { background: rgba(255, 255, 255, 0.8); border-color: var(--line); }
 .nav-btn--accent { background: var(--ink); color: var(--paper); }
 .nav-btn--accent:hover { background: #2e2c29; color: var(--paper); }
-.nav-btn--install { border-color: var(--line-2); background: #fff; }
-.toast {
-  position: absolute;
-  top: calc(var(--nav-h) + 10px);
-  left: 50%;
-  translate: -50% 0;
-  background: var(--ink);
-  color: var(--paper);
-  padding: 8px 16px;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  box-shadow: var(--shadow-2);
-}
 .sys { position: relative; }
-.sys-toggle--logo {
-  appearance: none;
-  display: block;
-  border: 1px solid transparent;
-  background: transparent;
-  padding: 2px 6px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-.sys-toggle--logo img { display: block; height: 36px; width: auto; }
-.sys-toggle--logo:hover, .sys-toggle[aria-expanded="true"] { background: rgba(255, 255, 255, 0.8); border-color: var(--line); }
-.sys-toggle:focus-visible { outline: 2px solid #41508a; outline-offset: 3px; }
-.sys-menu {
-  position: absolute;
-  top: calc(100% + 10px);
-  inset-inline-end: 0;
-  min-width: 200px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px;
-  background: rgba(250, 249, 246, 0.98);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: var(--shadow-2);
-  transform-origin: top;
-  transform: translateY(-4px);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.18s, transform 0.18s var(--ease), visibility 0s linear 0.18s;
-}
-.sys-menu.is-open { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition-delay: 0s; }
-.sys-menu .nav-btn { text-align: start; padding: 10px 14px; border-radius: 10px; }
 @media (max-width: 520px) {
   .brand-name { font-size: 1.1rem; }
   .brand-mark { display: none; }
   .nav-links { gap: 4px; }
-  .sys-toggle--logo img { height: 30px; }
 }
 
 /* ---------------------------------------------------------------- hero */
