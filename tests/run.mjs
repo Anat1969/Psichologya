@@ -8,7 +8,8 @@ import { ids, makeCase, makeReading, intake } from "./fixtures.mjs";
 
 const EXE = process.env.CHROME_PATH || "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const SHOTS = process.env.SHOTS || "tests/screens";
-const BASE = "http://localhost:4173";
+const PORT = process.env.PORT || "4173";
+const BASE = `http://localhost:${PORT}`;
 mkdirSync(SHOTS, { recursive: true });
 
 let failures = 0;
@@ -97,6 +98,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 async function newPage(browser, be, viewport = { width: 1360, height: 900 }) {
   const ctx = await browser.newContext({ viewport, locale: "he-IL", permissions: ["clipboard-read", "clipboard-write"] });
   await ctx.route(/ktqmwpbzcnzkhjskqisy\.supabase\.co/, be.handle);
+  // AI_MENU_JS: a local copy of the shared A&I menu, for runs where appofapp-gh.vercel.app is unreachable.
+  if (process.env.AI_MENU_JS) await ctx.route("https://appofapp-gh.vercel.app/ai-menu.js", (r) => r.fulfill({ path: process.env.AI_MENU_JS, contentType: "application/javascript" }));
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
   const page = await ctx.newPage();
   const errors = [];
@@ -106,10 +109,10 @@ async function newPage(browser, be, viewport = { width: 1360, height: 900 }) {
 }
 
 // ---------------------------------------------------------------- run
-const server = spawn("npx", ["vite", "preview", "--port", "4173", "--strictPort"], { stdio: "pipe" });
+const server = spawn("npx", ["vite", "preview", "--port", PORT, "--strictPort"], { stdio: "pipe" });
 await new Promise((res, rej) => {
   const t = setTimeout(() => rej(new Error("preview did not start")), 30000);
-  server.stdout.on("data", (d) => { if (String(d).includes("4173")) { clearTimeout(t); res(); } });
+  server.stdout.on("data", (d) => { if (String(d).includes(PORT)) { clearTimeout(t); res(); } });
 });
 const browser = await chromium.launch({ executablePath: EXE });
 
@@ -131,14 +134,15 @@ try {
     // nav
     ok((await page.locator(".brand").getAttribute("href")) === "/", "app name links home");
     ok((await page.locator(".nav-links > .nav-btn, .nav-links > .sys").count()) === 2, "top bar shows only 'new case' and the system menu");
-    ok(!(await page.locator(".sys-menu").evaluate((el) => el.classList.contains("is-open"))), "system menu closed by default");
-    await page.locator(".sys-toggle").click();
-    ok(await page.locator(".sys-toggle img[alt=מערכת]").isVisible(), "uploaded logo is the system menu trigger");
+    ok(!(await page.locator("ai-menu .panel").isVisible()), "system menu closed by default");
+    ok(await page.locator("header ai-menu .logo").isVisible(), "A&I logo button in the top bar");
+    ok(!(await page.locator("header >> text=העתקת קישור").first().isVisible().catch(() => false)), "no loose development buttons in the bar");
+    await page.locator("ai-menu .logo").click();
     await page.screenshot({ path: `${SHOTS}/01b-system-menu.png` });
-    ok((await page.locator("a.nav-btn", { hasText: "שיחת הפיתוח" }).getAttribute("href")).includes("claude.ai/code/session_"), "dev chat link");
-    ok((await page.locator("a.nav-btn", { hasText: "פרויקט המחקר" }).getAttribute("href")).includes("claude.ai/project/"), "research project link");
-    await page.locator("button.nav-btn", { hasText: "העתקת קישור" }).click();
-    await page.waitForSelector(".toast");
+    ok((await page.getByRole("menuitem", { name: "שיחת הפיתוח" }).getAttribute("href")).includes("claude.ai/code/session_"), "dev chat link");
+    ok((await page.getByRole("menuitem", { name: "פרויקט המחקר" }).getAttribute("href")).includes("claude.ai/project/"), "research project link");
+    await page.getByRole("menuitem", { name: "העתקת קישור" }).click();
+    await page.locator("ai-menu .note", { hasText: "הקישור הועתק" }).waitFor();
     ok((await page.evaluate(() => navigator.clipboard.readText())) === BASE + "/", "copy link copies current url");
     await page.locator("[data-testid=cases-new]").click();
     await page.waitForURL(/\/new$/);
@@ -273,8 +277,8 @@ try {
 
     // copy link with lens state
     await page.locator("[data-testid=rail-buddhist]").click();
-    await page.locator(".sys-toggle").click();
-    await page.locator("button.nav-btn", { hasText: "העתקת קישור" }).click();
+    await page.locator("ai-menu .logo").click();
+    await page.getByRole("menuitem", { name: "העתקת קישור" }).click();
     ok((await page.evaluate(() => navigator.clipboard.readText())).endsWith("?lens=buddhist"), "copy link keeps the lens in the url");
 
     // revise
@@ -359,14 +363,14 @@ try {
     await page.goto(`${BASE}/case/${ids.ready}`);
     await wait(800);
     await page.screenshot({ path: `${SHOTS}/09-mobile-case.png` });
-    await page.locator(".sys-toggle").click();
+    await page.locator("ai-menu .logo").click();
     await wait(300);
-    ok(await page.locator("button.nav-btn", { hasText: "העתקת קישור" }).isVisible(), "mobile system menu opens");
+    ok(await page.getByRole("menuitem", { name: "העתקת קישור" }).isVisible(), "mobile system menu opens");
     await noHScroll(page, "mobile system menu");
     await page.screenshot({ path: `${SHOTS}/10-mobile-menu.png` });
     await page.keyboard.press("Escape");
     await wait(300);
-    ok(!(await page.locator("button.nav-btn", { hasText: "העתקת קישור" }).isVisible()), "escape closes the system menu");
+    ok(!(await page.getByRole("menuitem", { name: "העתקת קישור" }).isVisible()), "escape closes the system menu");
     await page.locator(".nav-btn--accent").click();
     await page.waitForURL(/\/new$/);
     ok(true, "mobile menu link works");
@@ -386,6 +390,7 @@ try {
     const { tmpdir } = await import("node:os");
     const ctx = await chromium.launchPersistentContext(mkdtempSync(`${tmpdir()}/merhav-pwa-`), { executablePath: EXE, viewport: { width: 1280, height: 800 } });
     await ctx.route(/ktqmwpbzcnzkhjskqisy\.supabase\.co/, be.handle);
+    if (process.env.AI_MENU_JS) await ctx.route("https://appofapp-gh.vercel.app/ai-menu.js", (r) => r.fulfill({ path: process.env.AI_MENU_JS, contentType: "application/javascript" }));
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
     const page = ctx.pages()[0] ?? (await ctx.newPage());
     await page.goto(BASE + "/");

@@ -10,8 +10,8 @@
 - **הפרדה מלאה ב-Supabase המשותף (cultura-GH).** כל אובייקט של האפליקציה נושא קידומת: טבלאות `merhav_*`, דלי `merhav-media`, פונקציות `merhav-*`. לא נוגעים בטבלאות, דליים או פונקציות של אפליקציות אחרות, ולא משנים סודות משותפים.
 - **מיזוג קבוע מאושר.** אחרי בדיקה ירוקה ממזגים ל-main בלי לשאול.
 - עברית ו-RTL. בלי אייקונים או סמלים, גם לא בכפתורים.
-- סרגל עליון קבוע בכל הדפים: שם האפליקציה מקשר לדף הבית, "מקרה חדש", וכפתור מערכת אחד.
-- **כל כפתורי המערכת תחת כפתור אחד.** "העתקת קישור" (מעתיק את המצב הנוכחי, כולל `?lens=`), "שיחת הפיתוח", "פרויקט המחקר" ו"התקנת האפליקציה" (כש-Chrome מציע) יושבים בתפריט נפתח, לא בסרגל עצמו. הכפתור נקרא "מערכת", ואם ענת העלתה לוגו, הלוגו הוא הכפתור (`LOGO_URL` ב-`src/config.js`, הקובץ ב-`public/logo.png`).
+- סרגל עליון קבוע בכל הדפים: שם האפליקציה מקשר לדף הבית, "מקרה חדש", וכפתור הלוגו A&I.
+- **כל כפתורי המערכת תחת כפתור הלוגו A&I** (`<ai-menu>`): "העתקת קישור" (מעתיק את המצב הנוכחי, כולל `?lens=`), "שיחת הפיתוח", "פרויקט המחקר" ו"התקנת האפליקציה", לא בסרגל עצמו.
 - פרומפט חזותי: עברית בלבד, ובסופו תמיד `Documentary realism, Professional architecture photography, 1:1 --ar 1:1 --no text, words, writing, frame divisions`. הזנב מתווסף בשרת (`finishPrompt`).
 - המרחב מתאר את הפתרון, לא את הסבל. בלי פנים של אנשים ובלי טקסט.
 - כל גרסה מקורית וחדשנית יותר מהקודמת.
@@ -53,3 +53,6 @@ npm run build && npm test
 
 - 2026-10-18: כפתורי המערכת עברו לתפריט אחד שהלוגו של ענת פותח. הותקן `uipro init --ai claude` (`.claude/skills`).
 - 2026-10-18: הדמות כתבה "המשתמשת" על האדם שבמקרה. נוסף כלל ב-PERSONA: גוף שלישי בלבד.
+
+## A&I logo button
+The top bar holds only the app name (links home), content navigation, and ONE logo button "אד' ענת שטיבלמן A&I" (`<ai-menu>` from https://appofapp-gh.vercel.app/ai-menu.js). Every editing and development action (העתקת קישור, שיחת הפיתוח, פרויקט המחקר, התקנת האפליקציה, edit mode, add, delete) lives only inside it, never as loose buttons. Standard: https://github.com/Anat1969/AppOfApp-GH/blob/main/docs/ai-menu-standard.md
